@@ -17,6 +17,7 @@ apply plugin: 'java'
 
 repositories {
   jcenter()
+  maven { url 'http://oss.jfrog.org/oss-snapshot-local' }
   mavenLocal()
 }
 
@@ -34,10 +35,14 @@ javadoc {
 dependencies {
   compile "com.google.inject:guice:4.0"
   compile "com.netflix.iep:iep-guice:0.1.47"
-  compile "com.netflix.spectator:spectator-api:0.29.1"
-  compile "com.netflix.spectator:spectator-reg-metrics3:0.29.1"
+  compile "com.netflix.spectator:spectator-api:0.30.0-SNAPSHOT"
+  compile "com.netflix.spectator:spectator-reg-metrics3:0.30.0-SNAPSHOT"
   compile "org.slf4j:slf4j-api:1.7.12"
   compile "org.slf4j:slf4j-simple:1.7.12"
 }
 
-
+task(runMain, dependsOn: 'jar', type: JavaExec) {
+  main = 'com.netflix.spectator.example.metrics3.Main'
+  args = []
+  classpath = sourceSets.main.runtimeClasspath
+}
