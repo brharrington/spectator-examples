@@ -75,7 +75,7 @@ public class Server implements HttpHandler {
       registry.counter(requestCountId).increment();
 
       try {
-        byte[] msg = ("status " + status).getBytes("UTF-8");
+        byte[] msg = ("status " + status + "\n").getBytes("UTF-8");
         exchange.sendResponseHeaders(status, msg.length);
         exchange.getResponseHeaders().add("Content-Type", "text/plain");
         try (OutputStream out = exchange.getResponseBody()) {
