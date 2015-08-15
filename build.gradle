@@ -1,0 +1,43 @@
+buildscript {
+  repositories { jcenter() }
+  dependencies {
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
+  }
+}
+
+plugins {
+  id 'nebula.netflixoss' version '2.2.9'
+}
+
+// Establish version and status
+ext.githubProjectName = 'spectator-example-metrics3'
+
+apply plugin: 'nebula.netflixoss'
+apply plugin: 'java'
+
+repositories {
+  jcenter()
+  mavenLocal()
+}
+
+group = "com.netflix.${githubProjectName}"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+javadoc {
+  options {
+    links = ['http://docs.oracle.com/javase/8/docs/api/']
+  }
+}
+
+dependencies {
+  compile "com.google.inject:guice:4.0"
+  compile "com.netflix.iep:iep-guice:0.1.47"
+  compile "com.netflix.spectator:spectator-api:0.29.1"
+  compile "com.netflix.spectator:spectator-reg-metrics3:0.29.1"
+  compile "org.slf4j:slf4j-api:1.7.12"
+  compile "org.slf4j:slf4j-simple:1.7.12"
+}
+
+
