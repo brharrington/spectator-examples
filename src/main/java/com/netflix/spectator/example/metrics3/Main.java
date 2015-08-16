@@ -66,13 +66,6 @@ public class Main {
       }
     });
 
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      LOGGER.info("shutting down");
-      try {
-        helper.shutdown();
-      } catch (Exception e) {
-        LOGGER.error("shutdown failed", e);
-      }
-    }));
+    helper.addShutdownHook();
   }
 }
