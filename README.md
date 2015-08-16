@@ -1,4 +1,6 @@
 
+!https://travis-ci.org/brharrington/spectator-example-metrics3.svg
+
 Example for using the [Spectator Metrics3 Registry](https://github.com/Netflix/spectator/wiki/Metrics3-Registry).
 
 To run the example:
