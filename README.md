@@ -1,5 +1,5 @@
 
-!https://travis-ci.org/brharrington/spectator-example-metrics3.svg
+[![Build Status](https://travis-ci.org/brharrington/spectator-example-metrics3.svg)](https://travis-ci.org/brharrington/spectator-example-metrics3/builds)
 
 Example for using the [Spectator Metrics3 Registry](https://github.com/Netflix/spectator/wiki/Metrics3-Registry).
 
