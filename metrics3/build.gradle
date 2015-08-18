@@ -1,11 +1,12 @@
 
 dependencies {
-  compile "com.google.inject:guice:4.0"
-  compile "com.netflix.iep:iep-guice:0.1.47"
-  compile "com.netflix.spectator:spectator-api:0.30.0-SNAPSHOT"
-  compile "com.netflix.spectator:spectator-reg-metrics3:0.30.0-SNAPSHOT"
-  compile "org.slf4j:slf4j-api:1.7.12"
-  compile "org.slf4j:slf4j-simple:1.7.12"
+  compile project(':server')
+  compile "com.google.inject:guice:${version_guice}"
+  compile "com.netflix.iep:iep-guice:${version_iep}"
+  compile "com.netflix.spectator:spectator-api:${version_spectator}"
+  compile "com.netflix.spectator:spectator-reg-metrics3:${version_spectator}"
+  compile "org.slf4j:slf4j-api:${version_slf4j}"
+  compile "org.slf4j:slf4j-simple:${version_slf4j}"
 }
 
 task(runMain, dependsOn: 'jar', type: JavaExec) {

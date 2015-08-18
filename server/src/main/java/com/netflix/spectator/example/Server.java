@@ -1,4 +1,4 @@
-package com.netflix.spectator.example.metrics3;
+package com.netflix.spectator.example;
 
 import com.netflix.spectator.api.DistributionSummary;
 import com.netflix.spectator.api.Id;
@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class Server implements HttpHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
   private static final String[] AGENTS = new String[] {
       "chrome", "firefox", "msie", "safari", "mozilla", "curl", "java", "python"

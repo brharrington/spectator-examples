@@ -8,6 +8,7 @@ import com.google.inject.Provides;
 import com.netflix.iep.guice.GuiceHelper;
 import com.netflix.spectator.api.Clock;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.example.Server;
 import com.netflix.spectator.metrics3.MetricsRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
