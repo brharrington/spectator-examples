@@ -1,2 +1,3 @@
 include 'metrics3',
-        'server'
+        'server',
+        'servo'
