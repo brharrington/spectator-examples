@@ -1,14 +1,12 @@
 
-[![Build Status](https://travis-ci.org/brharrington/spectator-example-metrics3.svg)](https://travis-ci.org/brharrington/spectator-example-metrics3/builds)
-
 Example for using the [Spectator Metrics3 Registry](https://github.com/Netflix/spectator/wiki/Metrics3-Registry).
 
 To run the example:
 
 ```bash
-$ git clone git@github.com:brharrington/spectator-example-metrics3.git
-$ cd spectator-example-metrics3
-$ ./gradlew runMain
+$ git clone git@github.com:brharrington/spectator-examples.git
+$ cd spectator-examples
+$ ./gradlew metrics3:runMain
 ```
 
 Then generate some load:
@@ -22,5 +20,5 @@ $ curl -s 'http://localhost:54321/' -HUser-Agent:chrome
 Look at metrics using JMX or on the disk:
 
 ```bash
-$ ls metrics/
+$ ls metrics3/build/metrics/
 ```

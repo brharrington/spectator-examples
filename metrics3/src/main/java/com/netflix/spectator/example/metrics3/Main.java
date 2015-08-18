@@ -32,7 +32,7 @@ public class Main {
       jmx = JmxReporter.forRegistry(codaRegistry).build();
       jmx.start();
 
-      File dir = new File("./metrics");
+      File dir = new File("./build/metrics");
       dir.mkdirs();
       csv = CsvReporter.forRegistry(codaRegistry).build(dir);
       csv.start(5, TimeUnit.SECONDS);
