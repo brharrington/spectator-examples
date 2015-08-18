@@ -1,4 +1,4 @@
 
-[![Build Status](https://travis-ci.org/brharrington/spectator-example-metrics3.svg)](https://travis-ci.org/brharrington/spectator-example-metrics3/builds)
+[![Build Status](https://travis-ci.org/brharrington/spectator-examples.svg)](https://travis-ci.org/brharrington/spectator-examples/builds)
 
 Examples for using [Spectator](https://github.com/Netflix/spectator).
