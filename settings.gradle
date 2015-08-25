@@ -1,3 +1,4 @@
-include 'metrics3',
+include 'compatibility',
+        'metrics3',
         'server',
         'servo'
