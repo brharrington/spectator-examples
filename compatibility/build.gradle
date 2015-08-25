@@ -1,0 +1,14 @@
+
+dependencies {
+  compile "com.netflix.spectator:spectator-api:0.29.0" //${version_spectator}"
+  compile "javax.inject:javax.inject:1"
+  compile "org.slf4j:slf4j-api:${version_slf4j}"
+}
+
+jar {
+  manifest {
+    attributes(
+      'Main-Class': 'com.netflix.spectator.compat.Main'
+    )
+  }
+}

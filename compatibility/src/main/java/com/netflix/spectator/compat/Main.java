@@ -3,6 +3,7 @@ package com.netflix.spectator.compat;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.DistributionSummary;
+import com.netflix.spectator.api.DoubleFunction;
 import com.netflix.spectator.api.Functions;
 import com.netflix.spectator.api.LongTaskTimer;
 import com.netflix.spectator.api.ManualClock;
@@ -167,6 +168,12 @@ public class Main {
       }
     });
     registry.gauge("gauge-function", new AtomicLong(11), Functions.IDENTITY);
+    registry.gauge("gauge-function", new AtomicLong(13), new DoubleFunction() {
+      @Override
+      public double apply(double v) {
+        return v + 17;
+      }
+    });
 
     registry.gauge("gauge-age-non-deterministic", new AtomicLong(7), Functions.AGE);
 
