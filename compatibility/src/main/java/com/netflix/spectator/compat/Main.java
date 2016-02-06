@@ -50,11 +50,6 @@ public class Main {
     setElapsedTime(r, r.clock().monotonicTime() + t);
   }
 
-  private static void setWallTime(Registry r, long t) {
-    ManualClock c = (ManualClock) r.clock();
-    c.setWallTime(t);
-  }
-
   private static void record(DistributionSummary s) {
     long startingCount = s.count();
     long startingAmount = s.totalAmount();
