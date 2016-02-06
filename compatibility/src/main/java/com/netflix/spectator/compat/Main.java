@@ -16,6 +16,8 @@ import com.netflix.spectator.api.histogram.BucketCounter;
 import com.netflix.spectator.api.histogram.BucketDistributionSummary;
 import com.netflix.spectator.api.histogram.BucketFunctions;
 import com.netflix.spectator.api.histogram.BucketTimer;
+import com.netflix.spectator.api.histogram.PercentileDistributionSummary;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -186,6 +188,21 @@ public class Main {
     }
   }
 
+  private static void checkPercentileDistributionSummary(Registry registry) throws Exception {
+    PercentileDistributionSummary bds = PercentileDistributionSummary
+        .get(registry, registry.createId("percentile-dist"));
+    for (int i = 0; i < 1000; ++i) {
+      bds.record(TimeUnit.MILLISECONDS.toNanos(i));
+    }
+  }
+
+  private static void checkPercentileTimer(Registry registry) throws Exception {
+    PercentileTimer bt = PercentileTimer.get(registry, registry.createId("percentile-timer"));
+    for (int i = 0; i < 1000; ++i) {
+      bt.record(i, TimeUnit.MILLISECONDS);
+    }
+  }
+
   private static void checkGauge(Registry registry) throws Exception {
     registry.gauge(registry.createId("gauge"), new AtomicLong(7));
     registry.gauge(registry.createId("gauge").withTags(TAGS), new AtomicLong(7));
@@ -244,6 +261,8 @@ public class Main {
     checkBucketCounter(r, "decimal");
     checkBucketDistributionSummary(r);
     checkBucketTimer(r);
+    checkPercentileDistributionSummary(r);
+    checkPercentileTimer(r);
 
     List<String> ms = new ArrayList<>();
     for (Meter meter : r) {
