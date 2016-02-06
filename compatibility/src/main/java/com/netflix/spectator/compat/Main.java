@@ -167,7 +167,7 @@ public class Main {
         return ((AtomicLong) ref).get() + 7;
       }
     });
-    registry.gauge("gauge-function", new AtomicLong(11), Functions.IDENTITY);
+    registry.gauge("gauge-function", new AtomicLong(11), v -> v.doubleValue());
     registry.gauge("gauge-function", new AtomicLong(13), new DoubleFunction() {
       @Override
       public double apply(double v) {
