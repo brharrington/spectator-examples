@@ -12,6 +12,12 @@ import com.netflix.spectator.api.Meter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Timer;
 import com.netflix.spectator.api.ValueFunction;
+import com.netflix.spectator.api.histogram.BucketCounter;
+import com.netflix.spectator.api.histogram.BucketDistributionSummary;
+import com.netflix.spectator.api.histogram.BucketFunctions;
+import com.netflix.spectator.api.histogram.BucketTimer;
+import com.netflix.spectator.api.histogram.PercentileDistributionSummary;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.LongFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -48,11 +55,6 @@ public class Main {
 
   private static void updateElapsedTime(Registry r, long t) {
     setElapsedTime(r, r.clock().monotonicTime() + t);
-  }
-
-  private static void setWallTime(Registry r, long t) {
-    ManualClock c = (ManualClock) r.clock();
-    c.setWallTime(t);
   }
 
   private static void record(DistributionSummary s) {
@@ -152,6 +154,55 @@ public class Main {
     record(registry.counter("counter", "a", "b"));
   }
 
+  private static void checkBucketCounter(Registry registry, String mode) throws Exception {
+    LongFunction<String> f = null;
+    switch (mode) {
+      case "age":             f = BucketFunctions.age(500, TimeUnit.MILLISECONDS);        break;
+      case "ageBiasOld":      f = BucketFunctions.ageBiasOld(500, TimeUnit.MILLISECONDS); break;
+      case "latency":         f = BucketFunctions.latency(500, TimeUnit.MILLISECONDS);    break;
+      case "latencyBiasSlow": f = BucketFunctions.latency(500, TimeUnit.MILLISECONDS);    break;
+      case "bytes":           f = BucketFunctions.bytes(500);                             break;
+      case "decimal":         f = BucketFunctions.decimal(500);                           break;
+      default: throw new IllegalStateException("unkown mode: " + mode);
+    }
+    BucketCounter bc = BucketCounter.get(registry, registry.createId("bucket-counter-" + mode), f);
+    for (int i = 0; i < 1000; ++i) {
+      bc.record(TimeUnit.MILLISECONDS.toNanos(i));
+    }
+  }
+
+  private static void checkBucketDistributionSummary(Registry registry) throws Exception {
+    final LongFunction<String> f = BucketFunctions.latencyBiasSlow(500, TimeUnit.MILLISECONDS);
+    BucketDistributionSummary bds = BucketDistributionSummary
+        .get(registry, registry.createId("bucket-dist"), f);
+    for (int i = 0; i < 1000; ++i) {
+      bds.record(TimeUnit.MILLISECONDS.toNanos(i));
+    }
+  }
+
+  private static void checkBucketTimer(Registry registry) throws Exception {
+    final LongFunction<String> f = BucketFunctions.age(500, TimeUnit.MILLISECONDS);
+    BucketTimer bt = BucketTimer.get(registry, registry.createId("bucket-timer"), f);
+    for (int i = 0; i < 1000; ++i) {
+      bt.record(i, TimeUnit.MILLISECONDS);
+    }
+  }
+
+  private static void checkPercentileDistributionSummary(Registry registry) throws Exception {
+    PercentileDistributionSummary bds = PercentileDistributionSummary
+        .get(registry, registry.createId("percentile-dist"));
+    for (int i = 0; i < 1000; ++i) {
+      bds.record(TimeUnit.MILLISECONDS.toNanos(i));
+    }
+  }
+
+  private static void checkPercentileTimer(Registry registry) throws Exception {
+    PercentileTimer bt = PercentileTimer.get(registry, registry.createId("percentile-timer"));
+    for (int i = 0; i < 1000; ++i) {
+      bt.record(i, TimeUnit.MILLISECONDS);
+    }
+  }
+
   private static void checkGauge(Registry registry) throws Exception {
     registry.gauge(registry.createId("gauge"), new AtomicLong(7));
     registry.gauge(registry.createId("gauge").withTags(TAGS), new AtomicLong(7));
@@ -167,7 +218,7 @@ public class Main {
         return ((AtomicLong) ref).get() + 7;
       }
     });
-    registry.gauge("gauge-function", new AtomicLong(11), Functions.IDENTITY);
+    registry.gauge("gauge-function", new AtomicLong(11), v -> v.doubleValue());
     registry.gauge("gauge-function", new AtomicLong(13), new DoubleFunction() {
       @Override
       public double apply(double v) {
@@ -200,6 +251,18 @@ public class Main {
     checkLongTaskTimer(r);
     checkCounter(r);
     checkGauge(r);
+
+    // Histogram utilities
+    checkBucketCounter(r, "age");
+    checkBucketCounter(r, "ageBiasOld");
+    checkBucketCounter(r, "latency");
+    checkBucketCounter(r, "latencyBiasSlow");
+    checkBucketCounter(r, "bytes");
+    checkBucketCounter(r, "decimal");
+    checkBucketDistributionSummary(r);
+    checkBucketTimer(r);
+    checkPercentileDistributionSummary(r);
+    checkPercentileTimer(r);
 
     List<String> ms = new ArrayList<>();
     for (Meter meter : r) {
