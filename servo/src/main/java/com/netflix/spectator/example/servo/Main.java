@@ -12,8 +12,6 @@ import com.netflix.servo.publish.MetricPoller;
 import com.netflix.servo.publish.MonitorRegistryMetricPoller;
 import com.netflix.servo.publish.PollRunnable;
 import com.netflix.servo.publish.PollScheduler;
-import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.TagList;
 import com.netflix.spectator.api.Clock;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.example.Server;
@@ -21,16 +19,10 @@ import com.netflix.spectator.servo.ServoRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
