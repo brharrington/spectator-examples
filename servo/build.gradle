@@ -4,7 +4,10 @@ dependencies {
   compile "com.google.inject:guice:${version_guice}"
   compile "com.netflix.iep:iep-guice:${version_iep}"
   compile "com.netflix.spectator:spectator-api:${version_spectator}"
+  compile "com.netflix.spectator:spectator-ext-gc:${version_spectator}"
+  compile "com.netflix.spectator:spectator-ext-jvm:${version_spectator}"
   compile "com.netflix.spectator:spectator-reg-servo:${version_spectator}"
+  compile "com.netflix.servo:servo-atlas:${version_servo}"
   compile "org.slf4j:slf4j-api:${version_slf4j}"
   compile "org.slf4j:slf4j-simple:${version_slf4j}"
 }
