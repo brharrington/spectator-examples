@@ -11,7 +11,6 @@ import com.netflix.spectator.api.Measurement;
 import com.netflix.spectator.api.Meter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Timer;
-import com.netflix.spectator.api.ValueFunction;
 import com.netflix.spectator.api.histogram.BucketCounter;
 import com.netflix.spectator.api.histogram.BucketDistributionSummary;
 import com.netflix.spectator.api.histogram.BucketFunctions;
@@ -29,6 +28,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongFunction;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -210,15 +210,15 @@ public class Main {
     AtomicLong value = registry.gauge("gauge", new AtomicLong(7));
     value.set(42);
 
-    // Cast needed prior to 0.30.0
-    registry.gauge("gauge-function", new AtomicLong(7), v -> ((AtomicLong) v).get() + 3);
-    registry.gauge(registry.createId("gauge-function"), new AtomicLong(7), new ValueFunction() {
+    // Cast needed prior to 0.38.0
+    registry.gauge("gauge-function", new AtomicLong(7), (ToDoubleFunction<AtomicLong>) v -> v.get() + 3);
+    registry.gauge(registry.createId("gauge-function"), new AtomicLong(7), new ToDoubleFunction<AtomicLong>() {
       @Override
-      public double apply(Object ref) {
-        return ((AtomicLong) ref).get() + 7;
+      public double applyAsDouble(AtomicLong ref) {
+        return ref.get() + 7;
       }
     });
-    registry.gauge("gauge-function", new AtomicLong(11), v -> v.doubleValue());
+    registry.gauge("gauge-function", new AtomicLong(11), (ToDoubleFunction<AtomicLong>) v -> v.doubleValue());
     registry.gauge("gauge-function", new AtomicLong(13), new DoubleFunction() {
       @Override
       public double apply(double v) {
