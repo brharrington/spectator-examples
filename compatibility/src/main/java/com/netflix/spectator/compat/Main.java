@@ -1,5 +1,6 @@
 package com.netflix.spectator.compat;
 
+import com.netflix.spectator.api.AbstractRegistry;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.DistributionSummary;
@@ -18,6 +19,7 @@ import com.netflix.spectator.api.histogram.BucketTimer;
 import com.netflix.spectator.api.histogram.PercentileDistributionSummary;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -242,6 +244,20 @@ public class Main {
     registry.collectionSize(registry.createId("collection-size"), TAGS.keySet());
   }
 
+  private static void pollGauges(Registry registry) {
+    try {
+      if (registry instanceof AbstractRegistry) {
+        Method m = AbstractRegistry.class.getDeclaredMethod("pollGauges");
+        m.setAccessible(true);
+        m.invoke(registry);
+      }
+    } catch (Exception e) {
+      // Dump stack trace to aide in debugging if the internal implementation of
+      // AbstractRegistry changes in the future...
+      e.printStackTrace();
+    }
+  }
+
   public static Collection<String> run() throws Exception {
     ManualClock clock = new ManualClock();
     clock.setWallTime(1234567890L);
@@ -263,6 +279,10 @@ public class Main {
     checkBucketTimer(r);
     checkPercentileDistributionSummary(r);
     checkPercentileTimer(r);
+
+    // Passive gauges are polled in the background, we need to force that to happen for
+    // this test to ensure latest values are in the result.
+    pollGauges(r);
 
     List<String> ms = new ArrayList<>();
     for (Meter meter : r) {
