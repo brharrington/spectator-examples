@@ -205,57 +205,50 @@ public class Main {
     }
   }
 
-  private static void checkGauge(Registry registry) throws Exception {
-    registry.gauge(registry.createId("gauge"), new AtomicLong(7));
-    registry.gauge(registry.createId("gauge").withTags(TAGS), new AtomicLong(7));
+  // Need to keep references to these so they do not get garbage collected before
+  // the registry is sampled to get the values.
+  private static final AtomicLong SEVEN = new AtomicLong(7L);
+  private static final AtomicLong ELEVEN = new AtomicLong(11L);
+  private static final AtomicLong THIRTEEN = new AtomicLong(13L);
+  private static final AtomicLong SETTABLE = new AtomicLong(7);
 
-    AtomicLong value = registry.gauge("gauge", new AtomicLong(7));
+  private static void checkGauge(Registry registry) throws Exception {
+    registry.gauge(registry.createId("gauge"), SEVEN);
+    registry.gauge(registry.createId("gauge").withTags(TAGS), SEVEN);
+
+    AtomicLong value = registry.gauge("gauge", SETTABLE);
     value.set(42);
 
     // Cast needed prior to 0.38.0
-    registry.gauge("gauge-function", new AtomicLong(7), (ToDoubleFunction<AtomicLong>) v -> v.get() + 3);
-    registry.gauge(registry.createId("gauge-function"), new AtomicLong(7), new ToDoubleFunction<AtomicLong>() {
+    registry.gauge("gauge-function", SEVEN, (ToDoubleFunction<AtomicLong>) v -> v.get() + 3);
+    registry.gauge(registry.createId("gauge-function"), SEVEN, new ToDoubleFunction<AtomicLong>() {
       @Override
       public double applyAsDouble(AtomicLong ref) {
         return ref.get() + 7;
       }
     });
-    registry.gauge("gauge-function", new AtomicLong(11), (ToDoubleFunction<AtomicLong>) v -> v.doubleValue());
-    registry.gauge("gauge-function", new AtomicLong(13), new DoubleFunction() {
+    registry.gauge("gauge-function", ELEVEN, (ToDoubleFunction<AtomicLong>) v -> v.doubleValue());
+    registry.gauge("gauge-function", THIRTEEN, new DoubleFunction() {
       @Override
       public double apply(double v) {
         return v + 17;
       }
     });
 
-    registry.gauge("gauge-age-non-deterministic", new AtomicLong(7), Functions.AGE);
+    registry.gauge("gauge-age-non-deterministic", SEVEN, Functions.AGE);
 
     ManualClock c = new ManualClock();
     c.setWallTime(56);
-    registry.gauge("gauge-age", new AtomicLong(7), Functions.age(c));
+    registry.gauge("gauge-age", SEVEN, Functions.age(c));
 
-    registry.methodValue("method-value", new AtomicLong(11), "get");
-    registry.methodValue(registry.createId("method-value"), new AtomicLong(11), "get");
+    registry.methodValue("method-value", ELEVEN, "get");
+    registry.methodValue(registry.createId("method-value"), ELEVEN, "get");
 
     registry.mapSize("map-size", TAGS);
     registry.mapSize(registry.createId("map-size"), TAGS);
 
     registry.collectionSize("collection-size", TAGS.values());
     registry.collectionSize(registry.createId("collection-size"), TAGS.keySet());
-  }
-
-  private static void pollGauges(Registry registry) {
-    try {
-      if (registry instanceof AbstractRegistry) {
-        Method m = AbstractRegistry.class.getDeclaredMethod("pollGauges");
-        m.setAccessible(true);
-        m.invoke(registry);
-      }
-    } catch (Exception e) {
-      // Dump stack trace to aide in debugging if the internal implementation of
-      // AbstractRegistry changes in the future...
-      e.printStackTrace();
-    }
   }
 
   public static Collection<String> run() throws Exception {
@@ -279,10 +272,6 @@ public class Main {
     checkBucketTimer(r);
     checkPercentileDistributionSummary(r);
     checkPercentileTimer(r);
-
-    // Passive gauges are polled in the background, we need to force that to happen for
-    // this test to ensure latest values are in the result.
-    pollGauges(r);
 
     List<String> ms = new ArrayList<>();
     for (Meter meter : r) {
