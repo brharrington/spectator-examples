@@ -1,16 +1,18 @@
 package com.netflix.spectator.compat;
 
-import com.netflix.spectator.api.AbstractRegistry;
+import com.netflix.spectator.api.BasicTag;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.DistributionSummary;
 import com.netflix.spectator.api.DoubleFunction;
 import com.netflix.spectator.api.Functions;
+import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.LongTaskTimer;
 import com.netflix.spectator.api.ManualClock;
 import com.netflix.spectator.api.Measurement;
 import com.netflix.spectator.api.Meter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Tag;
 import com.netflix.spectator.api.Timer;
 import com.netflix.spectator.api.histogram.BucketCounter;
 import com.netflix.spectator.api.histogram.BucketDistributionSummary;
@@ -18,15 +20,20 @@ import com.netflix.spectator.api.histogram.BucketFunctions;
 import com.netflix.spectator.api.histogram.BucketTimer;
 import com.netflix.spectator.api.histogram.PercentileDistributionSummary;
 import com.netflix.spectator.api.histogram.PercentileTimer;
+import com.netflix.spectator.api.patterns.PolledMeter;
+import com.netflix.spectator.api.patterns.ThreadPoolMonitor;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongFunction;
@@ -249,6 +256,55 @@ public class Main {
 
     registry.collectionSize("collection-size", TAGS.values());
     registry.collectionSize(registry.createId("collection-size"), TAGS.keySet());
+
+    Id activeGaugeId = registry.createId("gauge-active").withTag("a", "1");
+    registry.gauge("gauge-active", "a", "0").set(1.0);
+    registry.gauge("gauge-active", activeGaugeId.tags()).set(2.0);
+    registry.gauge(activeGaugeId.withTag("a", "2")).set(3.0);
+
+    // PolledMeter pattern added in 0.58.0
+    PolledMeter.using(registry)
+        .withName("gauge-polled")
+        .withTag("type", "value")
+        .monitorValue(value);
+    PolledMeter.using(registry)
+        .withName("gauge-polled")
+        .withTag(new BasicTag("type", "value-function"))
+        .monitorValue(value, v -> v.get() * 2);
+    PolledMeter.using(registry)
+        .withName("gauge-polled")
+        .withTags(new BasicTag("type", "value-monotonic"))
+        .monitorMonotonicCounter(value);
+    PolledMeter.using(registry)
+        .withName("gauge-polled")
+        .withTags("type", "value-monotonic-function")
+        .monitorMonotonicCounter(value, v -> v.get() * 2);
+
+    Map<String, String> gaugeTagsMap = new HashMap<>();
+    gaugeTagsMap.put("type", "map-size");
+    PolledMeter.using(registry)
+        .withName("gauge-polled")
+        .withTags(gaugeTagsMap)
+        .monitorSize(gaugeTagsMap);
+
+    List<Tag> gaugeTagsList = Collections.singletonList(new BasicTag("type", "collection-size"));
+    ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+    PolledMeter.using(registry)
+        .withName("gauge-polled")
+        .withTags(gaugeTagsList)
+        .scheduleOn(executor)
+        .monitorSize(gaugeTagsList);
+
+    ThreadPoolMonitor.attach(registry, (ThreadPoolExecutor) executor, "test-pool");
+    executor.shutdownNow(); // cleanup to make sure main will exit
+
+    Id removeId = registry.createId("gauge-polled", "type", "remove");
+    PolledMeter.using(registry)
+        .withId(removeId)
+        .monitorValue(value);
+    PolledMeter.remove(registry, removeId);
+
+    PolledMeter.update(registry);
   }
 
   public static Collection<String> run() throws Exception {
