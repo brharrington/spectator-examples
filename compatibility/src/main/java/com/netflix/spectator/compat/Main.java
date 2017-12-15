@@ -219,6 +219,16 @@ public class Main {
   private static final AtomicLong THIRTEEN = new AtomicLong(13L);
   private static final AtomicLong SETTABLE = new AtomicLong(7);
 
+  private static final Map<String, String> GAUGE_TAGS_MAP = new HashMap<>();
+  static {
+    GAUGE_TAGS_MAP.put("type", "map-size");
+  }
+
+  private static final List<Tag> GAUGE_TAGS_LIST =
+      Collections.singletonList(new BasicTag("type", "collection-size"));
+
+  private static ScheduledExecutorService EXECUTOR = null;
+
   private static void checkGauge(Registry registry) throws Exception {
     registry.gauge(registry.createId("gauge"), SEVEN);
     registry.gauge(registry.createId("gauge").withTags(TAGS), SEVEN);
@@ -280,23 +290,20 @@ public class Main {
         .withTags("type", "value-monotonic-function")
         .monitorMonotonicCounter(value, v -> v.get() * 2);
 
-    Map<String, String> gaugeTagsMap = new HashMap<>();
-    gaugeTagsMap.put("type", "map-size");
     PolledMeter.using(registry)
         .withName("gauge-polled")
-        .withTags(gaugeTagsMap)
-        .monitorSize(gaugeTagsMap);
+        .withTags(GAUGE_TAGS_MAP)
+        .monitorSize(GAUGE_TAGS_MAP);
 
-    List<Tag> gaugeTagsList = Collections.singletonList(new BasicTag("type", "collection-size"));
-    ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+    EXECUTOR = Executors.newScheduledThreadPool(2);
     PolledMeter.using(registry)
         .withName("gauge-polled")
-        .withTags(gaugeTagsList)
-        .scheduleOn(executor)
-        .monitorSize(gaugeTagsList);
+        .withTags(GAUGE_TAGS_LIST)
+        .scheduleOn(EXECUTOR)
+        .monitorSize(GAUGE_TAGS_LIST);
 
-    ThreadPoolMonitor.attach(registry, (ThreadPoolExecutor) executor, "test-pool");
-    executor.shutdownNow(); // cleanup to make sure main will exit
+    ThreadPoolMonitor.attach(registry, (ThreadPoolExecutor) EXECUTOR, "test-pool");
+    EXECUTOR.shutdownNow(); // cleanup to make sure main will exit
 
     Id removeId = registry.createId("gauge-polled", "type", "remove");
     PolledMeter.using(registry)
