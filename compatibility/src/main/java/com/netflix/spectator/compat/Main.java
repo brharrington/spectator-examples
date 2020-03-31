@@ -304,6 +304,7 @@ public class Main {
 
     ThreadPoolMonitor.attach(registry, (ThreadPoolExecutor) EXECUTOR, "test-pool");
     EXECUTOR.shutdownNow(); // cleanup to make sure main will exit
+    EXECUTOR.awaitTermination(1, TimeUnit.MINUTES); // ensure threads are stopped
 
     Id removeId = registry.createId("gauge-polled", "type", "remove");
     PolledMeter.using(registry)
